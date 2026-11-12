@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<!-- kayralrics.com -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="author" content="kayralrics.com">
+<meta name="description" content="AES-256 text encryption and decryption in your browser. kayralrics.com">
+<title>AES-256 | kayralrics.com</title>
+<style>
+/* kayralrics.com */
+:root{--bg:#000;--text:#ebe6e6;--mute:#8b8081;--line:#2b1b1d;--red:#e0182d;--red2:#ff4458;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-weight:300;line-height:1.5;-webkit-font-smoothing:antialiased}
+main{width:100%;max-width:520px;margin:0 auto;padding:28px 22px 40px}
+header{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid var(--line);font-size:14px;color:var(--mute)}
+.mark{color:var(--text);font-weight:400;letter-spacing:.02em}
+.mark i{font-style:normal;color:var(--red)}
+h1{margin:56px 0 6px;font-size:clamp(52px,16vw,76px);font-weight:200;letter-spacing:-.02em;line-height:1}
+h1::after{content:"";display:block;width:44px;height:1px;background:var(--red);margin-top:22px}
+.sub{margin:18px 0 40px;color:var(--mute);font-size:16px}
+.tabs{display:flex;gap:28px;border-bottom:1px solid var(--line);margin-bottom:30px}
+.tabs button{position:relative;background:none;border:0;padding:0 0 12px;color:var(--mute);font:inherit;font-size:17px;cursor:pointer;transition:color .2s}
+.tabs button::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:1px;background:var(--red);transform:scaleX(0);transition:transform .25s}
+.tabs button.on{color:var(--text)}
+.tabs button.on::after{transform:scaleX(1)}
+label{display:block;margin:0 0 8px;font-size:14px;color:var(--mute)}
+textarea,input{width:100%;background:transparent;border:1px solid var(--line);border-radius:2px;color:var(--text);font:inherit;font-size:16px;padding:13px 14px;outline:0;transition:border-color .2s}
+textarea{resize:vertical;min-height:132px;line-height:1.55}
+textarea:focus,input:focus{border-color:var(--red)}
+#out{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;color:var(--red2);word-break:break-all}
+::placeholder{color:#4d4344}
+.field{margin-bottom:24px}
+.pw{position:relative}
+.pw input{padding-right:72px}
+.pw button{position:absolute;right:4px;top:4px;bottom:4px;padding:0 12px;background:none;border:0;color:var(--mute);font:inherit;font-size:14px;cursor:pointer}
+.pw button:hover{color:var(--text)}
+.go{position:relative;overflow:hidden;width:100%;height:52px;background:transparent;border:1px solid var(--red);border-radius:2px;color:var(--text);font:inherit;font-size:17px;font-weight:400;letter-spacing:.04em;cursor:pointer;transition:background .2s}
+.go span{position:relative;z-index:1}
+.go::before{content:"";position:absolute;inset:0;background:var(--red);transform:scaleX(0);transform-origin:left}
+.go:hover{background:rgba(224,24,45,.14)}
+.go:disabled{cursor:progress}
+.go.busy::before{animation:sweep 1.1s ease-in-out infinite}
+@keyframes sweep{0%{transform:scaleX(0);transform-origin:left}49%{transform:scaleX(1);transform-origin:left}51%{transform:scaleX(1);transform-origin:right}100%{transform:scaleX(0);transform-origin:right}}
+#msg{min-height:22px;margin:14px 0 0;font-size:14px;color:var(--mute)}
+#msg.err{color:var(--red2)}
+#res{margin-top:26px}
+.rh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.rh label{margin:0}
+.rh button{background:none;border:0;padding:0;margin-left:18px;color:var(--mute);font:inherit;font-size:14px;cursor:pointer}
+.rh button:hover{color:var(--red2)}
+footer{margin-top:64px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--mute)}
+footer b{font-weight:400;color:var(--text)}
+button:focus-visible{outline:1px solid var(--red2);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.go.busy::before{animation:none;transform:scaleX(1)}}
+</style>
+</head>
+<body>
+<main>
+<header><span class="mark">kayralrics<i>.</i>com</span><span>AES-256-GCM</span></header>
+<h1>AES-256</h1>
+<p class="sub">Encrypt or decrypt text. Your password never leaves this tab.</p>
+<nav class="tabs" role="tablist">
+<button type="button" class="on" data-m="e" role="tab" aria-selected="true">Encrypt</button>
+<button type="button" data-m="d" role="tab" aria-selected="false">Decrypt</button>
+</nav>
+<div class="field">
+<label for="in" id="l1">Text to encrypt</label>
+<textarea id="in" spellcheck="false" placeholder="Type or paste your text"></textarea>
+</div>
+<div class="field">
+<label for="pw">Password</label>
+<div class="pw"><input id="pw" type="password" autocomplete="off" spellcheck="false" placeholder="Choose a strong password"><button type="button" id="eye">Show</button></div>
+</div>
+<button type="button" class="go" id="go"><span>Encrypt</span></button>
+<p id="msg" role="status" aria-live="polite"></p>
+<section id="res" hidden>
+<div class="rh"><label for="out">Result</label><span><button type="button" id="cp">Copy</button><button type="button" id="clr">Clear</button></span></div>
+<textarea id="out" readonly spellcheck="false"></textarea>
+</section>
+<footer><b>kayralrics.com</b></footer>
+</main>
+<script>
+/* kayralrics.com */
+(()=>{
+const $=s=>document.querySelector(s);
+const te=new TextEncoder(),td=new TextDecoder();
+const inp=$('#in'),pw=$('#pw'),out=$('#out'),res=$('#res'),msg=$('#msg'),go=$('#go'),l1=$('#l1');
+let mode='e';
+const say=(t,e)=>{msg.textContent=t;msg.className=e?'err':''};
+const b64=u=>{let s='';for(let i=0;i<u.length;i+=32768)s+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(s)};
+const unb64=s=>Uint8Array.from(atob(s.replace(/\s+/g,'')),c=>c.charCodeAt(0));
+const derive=async(p,salt)=>{
+const k=await crypto.subtle.importKey('raw',te.encode(p),'PBKDF2',false,['deriveKey']);
+return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:600000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+};
+const encrypt=async(t,p)=>{
+const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+const key=await derive(p,salt);
+const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,te.encode(t)));
+const o=new Uint8Array(29+ct.length);
+o[0]=1;o.set(salt,1);o.set(iv,17);o.set(ct,29);
+return b64(o);
+};
+const decrypt=async(t,p)=>{
+const d=unb64(t);
+if(d.length<45||d[0]!==1)throw 0;
+const key=await derive(p,d.slice(1,17));
+return td.decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:d.slice(17,29)},key,d.slice(29)));
+};
+const setMode=m=>{
+mode=m;
+document.querySelectorAll('.tabs button').forEach(b=>{const on=b.dataset.m===m;b.classList.toggle('on',on);b.setAttribute('aria-selected',on)});
+l1.textContent=m==='e'?'Text to encrypt':'Text to decrypt';
+inp.placeholder=m==='e'?'Type or paste your text':'Paste the encrypted text';
+pw.placeholder=m==='e'?'Choose a strong password':'Enter the password used to encrypt';
+go.firstChild.textContent=m==='e'?'Encrypt':'Decrypt';
+res.hidden=true;out.value='';say('');
+};
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>setMode(b.dataset.m)));
+$('#eye').addEventListener('click',e=>{const h=pw.type==='password';pw.type=h?'text':'password';e.target.textContent=h?'Hide':'Show'});
+const run=async()=>{
+if(go.disabled)return;
+if(!window.crypto||!crypto.subtle){say('Encryption is unavailable here. Open this page over HTTPS.',1);return}
+if(!inp.value||!pw.value){say(mode==='e'?'Enter the text and a password.':'Enter the encrypted text and the password.',1);return}
+go.disabled=true;go.classList.add('busy');say('Working');
+try{
+const r=mode==='e'?await encrypt(inp.value,pw.value):await decrypt(inp.value.trim(),pw.value);
+out.value=r;res.hidden=false;
+out.style.height='auto';out.style.height=Math.max(132,out.scrollHeight+2)+'px';
+say(mode==='e'?'Encrypted with AES-256-GCM.':'Decrypted.');
+}catch(e){
+res.hidden=true;out.value='';
+say(mode==='e'?'Encryption failed.':'Wrong password or corrupted data.',1);
+}
+go.disabled=false;go.classList.remove('busy');
+};
+go.addEventListener('click',run);
+[inp,pw].forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey||el===pw)){e.preventDefault();run()}}));
+$('#cp').addEventListener('click',async()=>{
+try{await navigator.clipboard.writeText(out.value)}catch(e){out.select();document.execCommand('copy')}
+say('Copied.');
+});
+$('#clr').addEventListener('click',()=>{inp.value='';pw.value='';out.value='';res.hidden=true;say('');inp.focus()});
+})();
+</script>
+</body>
+</html>
